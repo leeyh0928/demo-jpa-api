@@ -1,12 +1,18 @@
 plugins {
     id 'org.springframework.boot' version '2.6.5'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'com.google.cloud.tools.jib' version '3.2.1'
     id 'java'
 }
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+jar {
+    enabled = false
+}
 
 configurations {
     compileOnly {
@@ -33,4 +39,25 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+jib {
+    from {
+        image = "pinpoint/pinpoint-agent:2.4.0-17-jre"
+    }
+    to {
+        image = "pinpoint/pinpoint-quickstart"
+        tags = ["latest"]
+    }
+    container {
+        creationTime = "USE_CURRENT_TIMESTAMP"
+
+        jvmFlags = [
+                "-XX:+UseContainerSupport"
+                , "-verbose:gc"
+                , "-XX:+PrintGCDetails"
+        ]
+
+        ports = ["8080"]
+    }
 }
